@@ -15,7 +15,9 @@ namespace Netwise
                 var response = await httpClient.GetStringAsync("https://catfact.ninja/fact");
 
                 var catFact = response.Trim();
-                var filePath = "cat_facts.txt";
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+                var filePath = Path.Combine(desktopPath, "catfacts.txt");
                 File.AppendAllText(filePath, catFact + Environment.NewLine);
 
             }
