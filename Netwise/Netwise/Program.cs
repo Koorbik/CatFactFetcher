@@ -19,29 +19,43 @@ namespace Netwise
 
     internal class Program
     {
-        private static void Main()
+        static async Task Main(string[] args)
         {
-            CatFact catFact;
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("https://catfact.ninja");
-                client.DefaultRequestHeaders.Add("User-Agent", "Anything");
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            CatFact? catFact;
 
-                var response = client.GetAsync("https://catfact.ninja/fact").Result;
-                response.EnsureSuccessStatusCode();
-                catFact = response.Content.ReadFromJsonAsync<CatFact>().Result;
-            }
-            
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var filePath = Path.Combine(desktopPath, "catfact.txt");
-            if (catFact != null)
+            try
             {
-            File.AppendAllText(filePath, catFact.ToString());
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://catfact.ninja");
+                    client.DefaultRequestHeaders.Add("User-Agent", "Anything");
+
+                    var response = await client.GetAsync("https://catfact.ninja/fact");
+                    response.EnsureSuccessStatusCode();
+                    catFact = await response.Content.ReadFromJsonAsync<CatFact>();
             }
-            else 
+             
+                if (catFact != null)
+                {
+                    File.AppendAllText("catfact.txt", catFact.ToString());
+                }
+                else 
+                {
+                    Console.WriteLine("No cat fact found");
+                }
+
+            }
+            catch (HttpRequestException httpEx)
             {
-                Console.WriteLine("No cat fact found");
+                Console.WriteLine($"HTTP Request failed: {httpEx.Message}");
+            }
+            catch (IOException ioEx)
+            {
+                Console.WriteLine($"File operation failed: {ioEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
             }
         }
     }
