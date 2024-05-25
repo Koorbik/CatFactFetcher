@@ -17,33 +17,59 @@ namespace Netwise
         }
     }
 
+    interface ICatFactFetcher
+    {
+         Task<CatFact?> GetCatFactAsync(CatFact? catFact);
+    }
+
+    internal class CatFactFetcher : ICatFactFetcher
+    {
+        public async Task<CatFact?> GetCatFactAsync(CatFact? catFact)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://catfact.ninja");
+                client.DefaultRequestHeaders.Add("User-Agent", "Anything");
+
+                var response = await client.GetAsync("https://catfact.ninja/fact");
+                response.EnsureSuccessStatusCode();
+                catFact = await response.Content.ReadFromJsonAsync<CatFact>();
+            }
+            
+            return catFact;
+        }
+    }
+
+    interface ICatFactWriter
+    {
+        void AppendToFile(CatFact? catFact);
+    }
+
+    internal class CatFactWriter : ICatFactWriter
+    {
+        public void AppendToFile(CatFact? catFact)
+        {
+            if (catFact != null)
+            {
+                File.AppendAllText("catfact.txt", catFact.ToString());
+            }
+            else 
+            {
+                Console.WriteLine("No cat fact found");
+            }
+        }
+    }
+
     internal class Program
     {
         static async Task Main(string[] args)
         {
-            CatFact? catFact;
+            CatFact? catFact = null;
 
             try
             {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri("https://catfact.ninja");
-                    client.DefaultRequestHeaders.Add("User-Agent", "Anything");
-
-                    var response = await client.GetAsync("https://catfact.ninja/fact");
-                    response.EnsureSuccessStatusCode();
-                    catFact = await response.Content.ReadFromJsonAsync<CatFact>();
-            }
-             
-                if (catFact != null)
-                {
-                    File.AppendAllText("catfact.txt", catFact.ToString());
-                }
-                else 
-                {
-                    Console.WriteLine("No cat fact found");
-                }
-
+                catFact = await new CatFactFetcher().GetCatFactAsync(catFact);
+                new CatFactWriter().AppendToFile(catFact);
             }
             catch (HttpRequestException httpEx)
             {
