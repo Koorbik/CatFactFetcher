@@ -1,31 +1,48 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
-using System.Threading.Tasks;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace Netwise
 {
-    class Program
+    internal class CatFact
     {
-        static async Task Main(string[] args)
+        public string Fact { get; set; } = string.Empty;
+        public int Length { get; set; } = 0;
+
+        public override string ToString()
         {
-            try
+            return $"Fact: {Fact} Length: {Length}\n";
+        }
+    }
+
+    internal class Program
+    {
+        private static void Main()
+        {
+            CatFact catFact;
+            using (var client = new HttpClient())
             {
-                using var httpClient = new HttpClient();
-                var response = await httpClient.GetStringAsync("https://catfact.ninja/fact");
+                client.BaseAddress = new Uri("https://catfact.ninja");
+                client.DefaultRequestHeaders.Add("User-Agent", "Anything");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var catFact = response.Trim();
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-                var filePath = Path.Combine(desktopPath, "catfacts.txt");
-                File.AppendAllText(filePath, catFact + Environment.NewLine);
-
+                var response = client.GetAsync("https://catfact.ninja/fact").Result;
+                response.EnsureSuccessStatusCode();
+                catFact = response.Content.ReadFromJsonAsync<CatFact>().Result;
             }
-            catch (Exception ex)
+            
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var filePath = Path.Combine(desktopPath, "catfact.txt");
+            if (catFact != null)
             {
-                Console.WriteLine($"{ex.Message}");
+            File.AppendAllText(filePath, catFact.ToString());
+            }
+            else 
+            {
+                Console.WriteLine("No cat fact found");
             }
         }
     }
 }
-
