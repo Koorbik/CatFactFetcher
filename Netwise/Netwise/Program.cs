@@ -1,11 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("NetwiseTests")]
+[assembly: InternalsVisibleTo("NetwiseTests")]
 
 namespace Netwise
 {
@@ -22,7 +20,7 @@ namespace Netwise
 
     interface ICatFactFetcher
     {
-         Task<CatFact?> GetCatFactAsync(CatFact? catFact);
+        Task<CatFact?> GetCatFactAsync(CatFact? catFact);
     }
 
     internal class CatFactFetcher : ICatFactFetcher
@@ -38,7 +36,7 @@ namespace Netwise
                 response.EnsureSuccessStatusCode();
                 catFact = await response.Content.ReadFromJsonAsync<CatFact>();
             }
-            
+
             return catFact;
         }
     }
@@ -56,7 +54,7 @@ namespace Netwise
             {
                 File.AppendAllText("catfact.txt", catFact.ToString());
             }
-            else 
+            else
             {
                 Console.WriteLine("No cat fact found");
             }
@@ -67,12 +65,21 @@ namespace Netwise
     {
         static async Task Main(string[] args)
         {
+            HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+            builder.Services.AddSingleton<ICatFactFetcher, CatFactFetcher>();
+            builder.Services.AddSingleton<ICatFactWriter, CatFactWriter>();
+
+            using IHost host = builder.Build();
+
+            ICatFactFetcher catFactFetcher = host.Services.GetRequiredService<ICatFactFetcher>();
+            ICatFactWriter catFactWriter = host.Services.GetRequiredService<ICatFactWriter>();
+
             CatFact? catFact = null;
 
             try
             {
-                catFact = await new CatFactFetcher().GetCatFactAsync(catFact);
-                new CatFactWriter().AppendToFile(catFact);
+                catFact = await catFactFetcher.GetCatFactAsync(catFact);
+                catFactWriter.AppendToFile(catFact);
             }
             catch (HttpRequestException httpEx)
             {

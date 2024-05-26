@@ -1,12 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Netwise;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Netwise.Tests
+﻿namespace Netwise.Tests
 {
     [TestClass]
     public class CatFactTests
@@ -16,7 +8,7 @@ namespace Netwise.Tests
         {
             var catFactFetcher = new CatFactFetcher();
             CatFact? catFact = null;
- 
+
             var catResponse = await catFactFetcher.GetCatFactAsync(catFact);
             Console.WriteLine(catResponse?.ToString());
         }
