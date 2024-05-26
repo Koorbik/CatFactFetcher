@@ -10,7 +10,7 @@
             CatFact? catFact = null;
 
             var catResponse = await catFactFetcher.GetCatFactAsync(catFact);
-            Console.WriteLine(catResponse?.ToString());
+            Assert.IsNotNull(catResponse);
         }
 
         [TestMethod]
@@ -19,19 +19,16 @@
             var catFactWriter = new CatFactWriter();
             var catFact = new CatFact { Fact = "Cats are cool.", Length = 13 };
             var expectedContent = catFact.ToString();
+            var consoleLogger = new ConsoleLogger();
+            var tempFileName = Path.GetTempFileName();
 
-            catFactWriter.AppendToFile(catFact);
+            catFactWriter.AppendToFile(catFact, consoleLogger, tempFileName);
 
-            var fileContent = File.ReadAllText("catfact.txt");
+            var fileContent = File.ReadAllText(tempFileName);
             Assert.IsTrue(fileContent.Contains(expectedContent));
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            if (File.Exists("catfact.txt"))
+            if (File.Exists(tempFileName))
             {
-                File.Delete("catfact.txt");
+                File.Delete(tempFileName);
             }
         }
     }
