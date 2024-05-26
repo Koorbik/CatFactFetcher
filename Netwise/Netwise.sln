@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netwise", "Netwise\Netwise.csproj", "{38E9767A-6186-4E81-A778-0D294A75FAE4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetwiseTests", "NetwiseTests1\NetwiseTests.csproj", "{B98F64C8-994A-4E61-9AE2-86D249C3EDA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetwiseTests", "NetwiseTests\NetwiseTests.csproj", "{B98F64C8-994A-4E61-9AE2-86D249C3EDA5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
